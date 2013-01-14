@@ -1,0 +1,79 @@
+#!/bin/sh
+# Copyright (c) Mark Lodato, 2012
+
+OPTIONS_SPEC="\
+git reparent [--no-reset] [-q] ((-p <parent>)... | --no-parent)
+
+Recommit HEAD with a new set of parents.
+--
+h,help          show the help
+p,parent=!      new parent to use; may be given multiple times
+no-parent!      create a parentless commit
+reset*          default behavior
+no-reset!       print the new object id instead of updating HEAD
+q,quiet         be quiet; only report errors
+"
+SUBDIRECTORY_OK=Yes
+. "$(git --exec-path)/git-sh-setup" || exit $?
+require_clean_work_tree reparent "Please commit or stash them."
+
+die_with_usage() {
+	echo "error: $1" >&2
+	usage
+}
+
+parent_flags=
+no_parent=
+no_reset=
+quiet=
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-p)
+		[ $# -eq 0 ] && die_with_usage "-p requires an argument"
+		shift
+		parent_flags="$parent_flags$(git rev-parse --sq-quote -p "$1")"
+		;;
+	--no-parent) no_parent=1 ;;
+	--reset)     no_reset= ;;
+	--no-reset)  no_reset=1 ;;
+	--quiet)     quiet=-q ;;
+	--no-quiet)  quiet= ;;
+	--)
+		shift
+		break
+		;;
+	*)
+		die "internal error: unknown flag $1"
+		;;
+	esac
+	shift
+done
+[ $# -gt 0 ] && \
+	die_with_usage "no positional arguments expected"
+[ -z "$no_parent" -a -z "$parent_flags" ] && \
+	die_with_usage "either -p or --no-parent is required"
+[ -n "$no_parent" -a -n "$parent_flags" ] && \
+	die_with_usage "-p and --no-parent are mutually exclusive"
+
+# Output the commit message for the specified commit.
+commit_message () {
+	git cat-file commit "$1" | sed "1,/^$/d"
+}
+
+# Create a new parent commit and print its object id.
+reparent () {
+	eval "$(get_author_ident_from_commit HEAD)"
+	commit_message HEAD | eval "git commit-tree HEAD: $parent_flags"
+}
+
+old_head="$(git rev-parse --short HEAD)" || exit $?
+new_head="$(reparent)" || exit $?
+
+if [ -n "$no_reset" ]; then
+	echo "$new_head"
+else
+	set_reflog_action reparent
+	git reset $quiet "$new_head" || exit $?
+	new_abbrev="$(git rev-parse --short HEAD)" || exit $?
+	[ -z "$quiet" ] && echo "Moved HEAD to $new_abbrev (was $old_head)"
+fi
