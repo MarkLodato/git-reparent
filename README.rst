@@ -49,60 +49,59 @@ EXAMPLES
 Reparenting the tip of a branch
 -------------------------------
 
-Suppose we created a commit on branch *master* on our local repository, and
-meanwhile someone else created a commit on *master* and pushed it.  Now, our
-local branch and the upstream branch have diverged. ::
+Suppose we create some commit *B* and then accidentally pass the ``--amend``
+flag when creating new commit *C*, resulting in the following history::
 
-                B (master, HEAD)
+                B
                /
-        ...---A---C---D (origin/master)
+        ...---A---C (HEAD)
 
-We looked at the contents of the upstream branch and realized that we want to
-throw all that way and use the state of *B* as-is, but we want to keep *C* and
-*D* in the history.  If we were to run ``git rebase origin/master``, this
-would try to apply the *diff* of *A..B* onto *D*; in other words, it would
-include both the upstream changes on ours.  This is not what we want.
-Instead, we want to create a new commit on top of *D* that contains the same
-exact *tree* as *B*.  To do this, we run::
+What we really wanted was one linear history, ``...---A--B--C``.  If we
+were to use ``git rebase`` or ``git cherry-pick`` to reconstruct the history,
+this would try to apply the *diff* of *A..C* onto *B*, which might fail.
+Instead, what we really want to do is use the exact message and tree from *C*
+but with parent *B* instead of *A*.  To do this, we run ::
 
-        $ git reparent -p origin/master
+        $ git reparent -p B
 
-After running the command, the history will look like this::
+where the name *B* can be found by running ``git reflog`` and looking for the
+first "commit (amend)".  The resulting history is now just what we wanted::
 
-                B       (origin/master)
-               /       /
-        ...---A---C---D---E (master, HEAD)
+                C
+               /
+        ...---A---B---C' (HEAD)
 
-However, the tree, commit message, and author information of *B* and *E* will
-be identical.
 
 Reparenting an inner commit
 ---------------------------
 
-Now suppose we have the same situation, but we have more than one commit on
-our local branch and we want to keep them all::
+We can also update the parents of a commit other than the most recent.
+Suppose that we want to perform a rebase-like operation, moving *master* onto
+*origin/master*, but we want to completely ignore any changes made in the
+remote branch.  That is, our history currently looks like this::
 
                 B---C (master, HEAD)
                /
         ...---A---D---E (origin/master)
 
-We can do this by using ``git rebase --interactive`` along with ``git
+and we want to make it look like this::
+
+                B---C   (origin/master)
+               /       /
+        ...---A---D---E---B'---C' (master, HEAD)
+
+We can accomplish this by using ``git rebase --interactive`` along with ``git
 reparent``::
 
-        $ git rebase -i origin/master
+        $ git rebase -i A
         # select the "edit" command for commit B
         # git rebase will dump us out at commit B
         $ git reparent -p origin/master
         $ git rebase --continue
 
-Now the history will look like we want it::
-
-                B---C   (origin/master)
-               /       /
-        ...---A---D---E---F---G (master, HEAD)
-
-As before, *F* will be identical to *B*, except for the parent and the
-committer information, and similiarly for *G* and *C*.
+Now the history will look as desired, and the trees, commit messages, and
+authors of *B'* and *C'* will be identical to those of *B* and *C*,
+respectively.
 
 
 SEE ALSO
