@@ -9,9 +9,9 @@ Recommit HEAD with a new set of parents.
 h,help          show the help
 p,parent=!      new parent to use; may be given multiple times
 no-parent!      create a parentless commit
+q,quiet         be quiet; only report errors
 reset*          default behavior
 no-reset!       print the new object id instead of updating HEAD
-q,quiet         be quiet; only report errors
 "
 SUBDIRECTORY_OK=Yes
 . "$(git --exec-path)/git-sh-setup" || exit $?
@@ -34,10 +34,10 @@ while [ $# -gt 0 ]; do
 		parent_flags="$parent_flags$(git rev-parse --sq-quote -p "$1")"
 		;;
 	--no-parent) no_parent=1 ;;
+	-q)          quiet=-q ;;
+	--no-quiet)  quiet= ;;
 	--reset)     no_reset= ;;
 	--no-reset)  no_reset=1 ;;
-	--quiet)     quiet=-q ;;
-	--no-quiet)  quiet= ;;
 	--)
 		shift
 		break

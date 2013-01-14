@@ -31,8 +31,8 @@ OPTIONS
 -h, --help              show the help
 -p, --parent <commit>   new parent to use; may be given multiple times
 --no-parent             create a parentless commit
---no-reset              print the new object id instead of updating HEAD
 -q, --quiet             be quiet; only report errors
+--no-reset              print the new object id instead of updating HEAD
 
 
 INSTALLATION
