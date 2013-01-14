@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) Mark Lodato, 2012
+# Copyright (c) Mark Lodato, 2013
 
 OPTIONS_SPEC="\
 git reparent [--no-reset] [-q] ((-p <parent>)... | --no-parent)
