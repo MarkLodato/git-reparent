@@ -8,6 +8,7 @@ Recommit HEAD with a new set of parents.
 --
 h,help          show the help
 e,edit          edit the commit message in an editor first
+m,message=      use the given message instead of that of HEAD
 p,parent=!      new parent to use; may be given multiple times
 no-parent!      create a parentless commit
 q,quiet         be quiet; only report errors
@@ -19,18 +20,19 @@ SUBDIRECTORY_OK=Yes
 require_clean_work_tree reparent "Please commit or stash them first."
 
 # Location of the temporary message.
-msg="$GIT_DIR/reparent-msg"
+msg_file="$GIT_DIR/reparent-msg"
 
 die_with_usage() {
 	echo "error: $1" >&2
 	usage
 }
 
-parent_flags=
+edit=
+message=
 no_parent=
 no_reset=
+parent_flags=
 quiet=
-edit=
 while [ $# -gt 0 ]; do
 	case "$1" in
 	-p)
@@ -41,17 +43,14 @@ while [ $# -gt 0 ]; do
 	--no-parent) no_parent=1 ;;
 	-e)          edit=1 ;;
 	--no-edit)   edit= ;;
+	-m)          message="$2"; shift ;;
+	--no-message)message= ;;
 	-q)          quiet=-q ;;
 	--no-quiet)  quiet= ;;
 	--reset)     no_reset= ;;
 	--no-reset)  no_reset=1 ;;
-	--)
-		shift
-		break
-		;;
-	*)
-		die "internal error: unknown flag $1"
-		;;
+	--)          shift; break ;;
+	*)           die "internal error: unknown flag $1" ;;
 	esac
 	shift
 done
@@ -63,16 +62,21 @@ done
 	die_with_usage "-p and --no-parent are mutually exclusive"
 
 # Create the commit.
-git cat-file commit HEAD | sed "1,/^$/d" > "$msg"
+if [ -n "$message" ]; then
+	echo "$message" > "$msg_file"
+else
+	git cat-file commit HEAD | sed "1,/^$/d" > "$msg_file"
+fi
 if [ -n "$edit" ]; then
 	# TODO: use the normal `git commit` comment stripping stuff
-	git_editor "$msg" || die "no editor configured"
-	[ -s "$msg" ] || die "aborting due to empty commit message"
+	git_editor "$msg_file" || die "no editor configured"
+	[ -s "$msg_file" ] || die "aborting due to empty commit message"
 fi
 eval "$(get_author_ident_from_commit HEAD)"
 old_head="$(git rev-parse --short HEAD)" || exit $?
-new_head="$(eval "git commit-tree HEAD: $parent_flags" '< $msg')" || exit $?
-rm "$msg"
+new_head="$(eval "git commit-tree HEAD: $parent_flags" '< $msg_file')" || \
+	exit $?
+rm "$msg_file"
 
 # Print out the commit if --no-reset; otherwise update HEAD.
 if [ -n "$no_reset" ]; then
