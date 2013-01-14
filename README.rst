@@ -8,7 +8,7 @@ git-reparent - Recommit HEAD with a new set of parents.
 SYNOPSIS
 ========
 
-``git reparent [--no-reset] [-q] ((-p <parent>)... | --no-parent)``
+``git reparent [OPTIONS] ((-p <parent>)... | --no-parent)``
 
 
 DESCRIPTION

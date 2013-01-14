@@ -2,7 +2,7 @@
 # Copyright (c) Mark Lodato, 2013
 
 OPTIONS_SPEC="\
-git reparent [--no-reset] [-q] ((-p <parent>)... | --no-parent)
+git reparent [OPTIONS] ((-p <parent>)... | --no-parent)
 
 Recommit HEAD with a new set of parents.
 --
