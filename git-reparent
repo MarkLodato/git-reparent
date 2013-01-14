@@ -15,7 +15,7 @@ no-reset!       print the new object id instead of updating HEAD
 "
 SUBDIRECTORY_OK=Yes
 . "$(git --exec-path)/git-sh-setup" || exit $?
-require_clean_work_tree reparent "Please commit or stash them."
+require_clean_work_tree reparent "Please commit or stash them first."
 
 die_with_usage() {
 	echo "error: $1" >&2
