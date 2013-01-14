@@ -51,9 +51,9 @@ Suppose we created a commit on branch *master* on our local repository, and
 meanwhile someone else created a commit on *master* and pushed it.  Now, our
 local branch and the upstream branch have diverged. ::
 
->        B (master, HEAD)
->       /
->...---A---C---D (origin/master)
+                B (master, HEAD)
+               /
+        ...---A---C---D (origin/master)
 
 We looked at the contents of the upstream branch and realized that we want to
 throw all that way and use the state of *B* as-is, but we want to keep *C* and
@@ -67,9 +67,9 @@ exact *tree* as *B*.  To do this, we run::
 
 After running the command, the history will look like this::
 
->        B       (origin/master)
->       /       /
->...---A---C---D---E (master, HEAD)
+                B       (origin/master)
+               /       /
+        ...---A---C---D---E (master, HEAD)
 
 However, the tree, commit message, and author information of *B* and *E* will
 be identical.
@@ -80,9 +80,9 @@ Reparenting an inner commit
 Now suppose we have the same situation, but we have more than one commit on
 our local branch and we want to keep them all::
 
->        B---C (master, HEAD)
->       /
->...---A---D---E (origin/master)
+                B---C (master, HEAD)
+               /
+        ...---A---D---E (origin/master)
 
 We can do this by using ``git rebase --interactive`` along with ``git
 reparent``::
@@ -95,9 +95,9 @@ reparent``::
 
 Now the history will look like we want it::
 
->        B---C   (origin/master)
->       /       /
->...---A---D---E---F---G (master, HEAD)
+                B---C   (origin/master)
+               /       /
+        ...---A---D---E---F---G (master, HEAD)
 
 As before, *F* will be identical to *B*, except for the parent and the
 committer information, and similiarly for *G* and *C*.
