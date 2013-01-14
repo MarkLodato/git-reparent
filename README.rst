@@ -117,4 +117,6 @@ another
 AUTHOR
 ======
 
-Mark Lodato <lodatom@gmail.com>
+Mark Lodato <lodato@google.com>
+
+Copyright 2013 Google Inc.

@@ -1,5 +1,7 @@
 #!/bin/sh
-# Copyright (c) Mark Lodato, 2013
+# Copyright 2013 Google Inc.
+# Written by Mark Lodato <lodato@google.com>.
+# Distributed under the GNU General Public License, version 2.0.
 
 OPTIONS_SPEC="\
 git reparent [OPTIONS] ((-p <parent>)... | --no-parent)
