@@ -29,6 +29,7 @@ OPTIONS
 =======
 
 -h, --help              show the help
+-e, --edit              edit the commit message in an editor first
 -p, --parent <commit>   new parent to use; may be given multiple times
 --no-parent             create a parentless commit
 -q, --quiet             be quiet; only report errors

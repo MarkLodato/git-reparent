@@ -7,6 +7,7 @@ git reparent [--no-reset] [-q] ((-p <parent>)... | --no-parent)
 Recommit HEAD with a new set of parents.
 --
 h,help          show the help
+e,edit          edit the commit message in an editor first
 p,parent=!      new parent to use; may be given multiple times
 no-parent!      create a parentless commit
 q,quiet         be quiet; only report errors
@@ -17,6 +18,9 @@ SUBDIRECTORY_OK=Yes
 . "$(git --exec-path)/git-sh-setup" || exit $?
 require_clean_work_tree reparent "Please commit or stash them first."
 
+# Location of the temporary message.
+msg="$GIT_DIR/reparent-msg"
+
 die_with_usage() {
 	echo "error: $1" >&2
 	usage
@@ -26,6 +30,7 @@ parent_flags=
 no_parent=
 no_reset=
 quiet=
+edit=
 while [ $# -gt 0 ]; do
 	case "$1" in
 	-p)
@@ -34,6 +39,8 @@ while [ $# -gt 0 ]; do
 		parent_flags="$parent_flags$(git rev-parse --sq-quote -p "$1")"
 		;;
 	--no-parent) no_parent=1 ;;
+	-e)          edit=1 ;;
+	--no-edit)   edit= ;;
 	-q)          quiet=-q ;;
 	--no-quiet)  quiet= ;;
 	--reset)     no_reset= ;;
@@ -55,20 +62,19 @@ done
 [ -n "$no_parent" -a -n "$parent_flags" ] && \
 	die_with_usage "-p and --no-parent are mutually exclusive"
 
-# Output the commit message for the specified commit.
-commit_message () {
-	git cat-file commit "$1" | sed "1,/^$/d"
-}
-
-# Create a new parent commit and print its object id.
-reparent () {
-	eval "$(get_author_ident_from_commit HEAD)"
-	commit_message HEAD | eval "git commit-tree HEAD: $parent_flags"
-}
-
+# Create the commit.
+git cat-file commit HEAD | sed "1,/^$/d" > "$msg"
+if [ -n "$edit" ]; then
+	# TODO: use the normal `git commit` comment stripping stuff
+	git_editor "$msg" || die "no editor configured"
+	[ -s "$msg" ] || die "aborting due to empty commit message"
+fi
+eval "$(get_author_ident_from_commit HEAD)"
 old_head="$(git rev-parse --short HEAD)" || exit $?
-new_head="$(reparent)" || exit $?
+new_head="$(eval "git commit-tree HEAD: $parent_flags" '< $msg')" || exit $?
+rm "$msg"
 
+# Print out the commit if --no-reset; otherwise update HEAD.
 if [ -n "$no_reset" ]; then
 	echo "$new_head"
 else
