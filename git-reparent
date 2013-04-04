@@ -75,6 +75,7 @@ if [ -n "$edit" ]; then
 	[ -s "$msg_file" ] || die "aborting due to empty commit message"
 fi
 eval "$(get_author_ident_from_commit HEAD)"
+export GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_AUTHOR_DATE
 old_head="$(git rev-parse --short HEAD)" || exit $?
 new_head="$(eval "git commit-tree HEAD: $parent_flags" '< $msg_file')" || \
 	exit $?
