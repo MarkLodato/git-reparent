@@ -91,7 +91,9 @@ and we want to make it look like this::
         ...---A---D---E---B'---C' (master, HEAD)
 
 We can accomplish this by using ``git rebase --interactive`` along with ``git
-reparent``::
+reparent``:
+
+.. code:: bash
 
         $ git rebase -i A
         # select the "edit" command for commit B
