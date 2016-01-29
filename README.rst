@@ -114,15 +114,11 @@ git-rebase(1) can be used to re-apply the *diffs* of the current branch to
 another
 
 
-LICENSE
-=======
-
-`Apache License, Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_
-
-
 AUTHOR
 ======
 
 Mark Lodato <lodato@google.com>
 
 Copyright 2013 Google Inc.
+
+Distributed under the GNU General Public License, version 2.0.
