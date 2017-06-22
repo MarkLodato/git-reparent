@@ -3,19 +3,26 @@
 # Written by Mark Lodato <lodato@google.com>.
 # Distributed under the GNU General Public License, version 2.0.
 
+get_committer_ident_from_commit () {
+	encoding=$(git config i18n.commitencoding || echo UTF-8)
+	git show -s --pretty=raw --encoding="$encoding" "$1" -- |
+	parse_ident_from_commit committer COMMITTER
+}
+
 OPTIONS_SPEC="\
 git reparent [OPTIONS] ((-p <parent>)... | --no-parent)
 
 Recommit HEAD with a new set of parents.
 --
-h,help          show the help
-e,edit          edit the commit message in an editor first
-m,message=      use the given message instead of that of HEAD
-p,parent=!      new parent to use; may be given multiple times
-no-parent!      create a parentless commit
-q,quiet         be quiet; only report errors
-reset*          default behavior
-no-reset!       print the new object id instead of updating HEAD
+h,help                   show the help
+e,edit                   edit the commit message in an editor first
+m,message=               use the given message instead of that of HEAD
+p,parent=!               new parent to use; may be given multiple times
+no-parent!               create a parentless commit
+q,quiet                  be quiet; only report errors
+reset*                   default behavior
+no-reset!                print the new object id instead of updating HEAD
+no-reset-committer!      print the new object id instead of updating HEAD
 "
 SUBDIRECTORY_OK=Yes
 . "$(git --exec-path)/git-sh-setup" || exit $?
@@ -35,6 +42,7 @@ no_parent=
 no_reset=
 parent_flags=
 quiet=
+no_reset_committer=
 while [ $# -gt 0 ]; do
 	case "$1" in
 	-p)
@@ -42,15 +50,16 @@ while [ $# -gt 0 ]; do
 		shift
 		parent_flags="$parent_flags$(git rev-parse --sq-quote -p "$1")"
 		;;
-	--no-parent) no_parent=1 ;;
-	-e)          edit=1 ;;
-	--no-edit)   edit= ;;
-	-m)          message="$2"; shift ;;
-	--no-message)message= ;;
-	-q)          quiet=-q ;;
-	--no-quiet)  quiet= ;;
-	--reset)     no_reset= ;;
-	--no-reset)  no_reset=1 ;;
+	--no-parent)         no_parent=1 ;;
+	-e)                  edit=1 ;;
+	--no-edit)           edit= ;;
+	-m)                  message="$2"; shift ;;
+	--no-message)        message= ;;
+	-q)                  quiet=-q ;;
+	--no-quiet)          quiet= ;;
+	--reset)             no_reset= ;;
+	--no-reset)          no_reset=1 ;;
+    --no-reset-committer)no_reset_committer=1 ;;
 	--)          shift; break ;;
 	*)           die "internal error: unknown flag $1" ;;
 	esac
@@ -76,6 +85,10 @@ if [ -n "$edit" ]; then
 fi
 eval "$(get_author_ident_from_commit HEAD)"
 export GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_AUTHOR_DATE
+if [ -n "$no_reset_committer" ]; then
+	eval "$(get_committer_ident_from_commit HEAD)"
+	export GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL GIT_COMMITTER_DATE
+fi
 old_head="$(git rev-parse --short HEAD)" || exit $?
 new_head="$(eval "git commit-tree HEAD: $parent_flags" '< "$msg_file"')" || \
 	exit $?
