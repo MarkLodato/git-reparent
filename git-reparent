@@ -22,7 +22,7 @@ no-parent!               create a parentless commit
 q,quiet                  be quiet; only report errors
 reset*                   default behavior
 no-reset!                print the new object id instead of updating HEAD
-no-reset-committer!      print the new object id instead of updating HEAD
+no-reset-committer!      use committer and commit date from original commit
 "
 SUBDIRECTORY_OK=Yes
 . "$(git --exec-path)/git-sh-setup" || exit $?
